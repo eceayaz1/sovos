@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_l10n_tr_sovos" model="ir.ui.view">
+        <field name="name">account.move.form.l10n_tr_sovos</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="after">
+                <div class="alert alert-danger" role="alert" invisible="l10n_tr_sovos_state != 'error'">
+                    GİB faturayı alıcıya iletemedi:
+                    <field name="l10n_tr_sovos_status_code" class="oe_inline"/> -
+                    <field name="l10n_tr_sovos_status_description" class="oe_inline"/>.
+                    Reddedilen fatura yeniden kullanılamaz, lütfen yeni bir fatura oluşturun.
+                </div>
+            </xpath>
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_l10n_tr_sovos_update_status"
+                        string="Sovos Durum Sorgula"
+                        type="object"
+                        invisible="l10n_tr_sovos_state != 'sent' and not (l10n_tr_sovos_state == 'succeed' and l10n_tr_gib_invoice_scenario == 'TICARIFATURA' and not l10n_tr_sovos_response)"/>
+                <button name="action_l10n_tr_sovos_fetch_pdf"
+                        string="Sovos PDF Al"
+                        type="object"
+                        invisible="l10n_tr_sovos_state not in ('sent', 'succeed', 'received')"/>
+                <button name="action_l10n_tr_sovos_open_app_response_wizard"
+                        string="Kabul / Red Yanıtı Gönder"
+                        type="object"
+                        class="btn-primary"
+                        invisible="l10n_tr_sovos_state != 'received' or l10n_tr_sovos_profile_id != 'TICARIFATURA' or l10n_tr_sovos_response"/>
+            </xpath>
+            <xpath expr="//page[@id='other_tab']" position="after">
+                <page id="l10n_tr_sovos_tab" string="Sovos e-Fatura" name="l10n_tr_sovos"
+                      invisible="l10n_tr_sovos_state == 'not_sent'">
+                    <group>
+                        <group>
+                            <field name="l10n_tr_sovos_state" widget="badge"
+                                   decoration-danger="l10n_tr_sovos_state == 'error'"
+                                   decoration-warning="l10n_tr_sovos_state == 'sent'"
+                                   decoration-success="l10n_tr_sovos_state in ('succeed', 'received')"/>
+                            <field name="l10n_tr_nilvera_uuid" string="ETTN"/>
+                            <field name="l10n_tr_sovos_document_id"/>
+                            <field name="l10n_tr_sovos_envelope_uuid"/>
+                        </group>
+                        <group>
+                            <field name="l10n_tr_sovos_status_code"/>
+                            <field name="l10n_tr_sovos_status_description"/>
+                            <field name="l10n_tr_sovos_profile_id" invisible="not l10n_tr_sovos_profile_id"/>
+                            <field name="l10n_tr_sovos_sender_alias" invisible="not l10n_tr_sovos_sender_alias"/>
+                            <field name="l10n_tr_sovos_response" invisible="not l10n_tr_sovos_response"/>
+                            <field name="l10n_tr_sovos_response_note" invisible="not l10n_tr_sovos_response_note"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_invoice_tree_l10n_tr_sovos" model="ir.ui.view">
+        <field name="name">account.move.list.l10n_tr_sovos</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <button name="action_force_register_payment" position="after">
+                <button name="action_l10n_tr_sovos_update_status" type="object" string="Sovos Durum Sorgula"/>
+            </button>
+            <xpath expr="//field[@name='abnormal_date_warning']" position="after">
+                <field name="l10n_tr_sovos_state"
+                       widget="badge"
+                       decoration-danger="l10n_tr_sovos_state == 'error'"
+                       decoration-warning="l10n_tr_sovos_state == 'sent'"
+                       decoration-success="l10n_tr_sovos_state in ('succeed', 'received')"
+                       optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_invoice_filter_l10n_tr_sovos" model="ir.ui.view">
+        <field name="name">account.move.search.l10n_tr_sovos</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='accounting_date']" position="after">
+                <filter string="Sovos Durumu" name="l10n_tr_sovos_state_group" context="{'group_by': 'l10n_tr_sovos_state'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
